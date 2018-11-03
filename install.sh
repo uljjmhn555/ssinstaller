@@ -1,38 +1,37 @@
 #!/bin/bash
 
-# file name
-
 # bin path
 binPath="/usr/local/bin/"
+#binPath="./tmp/"
 
 # config path
 configPath="/etc/shadowsocks/"
+#configPath="./tmp/"
 
 pidFilePath="/var/run/"
+#pidFilePath="./tmp/"
 
 # systemctl service path
 servicePath="/etc/systemd/system/"
+#servicePath="./tmp/"
 
-
-# ss version
-binVersion="1.2.0"
 
 ## service content
-
-## $1 type sslocal or ssserver
+## $1 type local or server
 funCreateServiceFile()
 {
-    varServiceFile=$servicePath$1".service"
+    local ssType="ss"$1
+    local varServiceFile=$servicePath$ssType".service"
 
     echo "[Unit]" > $varServiceFile
-    echo "Description="$1 >> $varServiceFile
+    echo "Description="$ssType >> $varServiceFile
     echo "After=network.target" >> $varServiceFile
     echo "After=syslog.target" >> $varServiceFile
 
     echo "[Service]" >> $varServiceFile
     echo "Type=forking" >> $varServiceFile
-    echo "PIDFile="$pidFilePath$1".pid" >> $varServiceFile
-    echo "ExecStart="$binPath$1" -c "$configPath$1".json > /dev/null & " >> $varServiceFile
+    echo "PIDFile="$pidFilePath$ssType".pid" >> $varServiceFile
+    echo "ExecStart="$binPath$ssType" -c "$configPath$ssType".json > /dev/null & " >> $varServiceFile
     echo 'ExecStop=/bin/kill $MAINPID' >> $varServiceFile
     echo 'ExecReload=/bin/kill -USR1 $MAINPID' >> $varServiceFile
     echo "Restart=always" >> $varServiceFile
@@ -43,34 +42,18 @@ funCreateServiceFile()
 }
 
 ## config
+## type server local
 funCopyConfig()
 {
+    local varType="ss"$1
+    local sourcePath="config/"
+    local varConfigFile=$sourcePath$varType".json"
+
     mkdir $configPath
-    sourcePath="config/"
-    varConfigFile=$sourcePath$1".json"
-    cp $sourcePath"sslocal.json"  $configPath
-    cp $sourcePath"ssserver.json"  $configPath
+
+    cp $sourcePath"$varType.json"  $configPath
 }
 
-## architecture arm64 amd64 ......
-# funCopyBinFile()
-# {
-#     ## source file
-#     sourceFileLocal="bin/shadowsocks-local-linux-$1-$binVersion"
-#     sourceFileServer="bin/shadowsocks-server-linux-$1-$binVersion"
-
-#     ## dist file
-#     distFileLocal=$binPath"sslocal"
-#     distFileServer=$binPath"ssserver"
-
-#     ## copy file
-#     cp $sourceFileLocal $distFileLocal
-#     cp $sourceFileServer $distFileServer
-
-#     ## chmod +x
-#     chmod +x $distFileLocal
-#     chmod +x $distFileServer
-# }
 
 ## $1 type: server local
 ## $2 archi: amd64 arm64
@@ -78,10 +61,10 @@ funCopyConfig()
 funGetBinaryFile()
 {
     local type="$1"
-    local archi="$1"
-    local version="$2"
-    local fileName = "shadowsocks-$type-linux-$archi-$version"
-    local url="https://github.com/uljjmhn555/ssinstaller/releases/$version/$fileName.gz"
+    local archi="$2"
+    local version="$3"
+    local fileName="shadowsocks-$type-linux-$archi-$version"
+    local url="https://github.com/uljjmhn555/ssinstaller/releases/download/$version/$fileName.gz"
     local distFile="ss$type"
     mkdir "bin"
     wget -P "bin/" $url
@@ -90,10 +73,11 @@ funGetBinaryFile()
     chmod +x $binPath$distFile
 }
 
-## architectureArray=("arm64" "arm32" "amd64" "i386")
+## architecture  version  type
 architectureArray="amd64 i386 arm64 arm32"
 versionArray="1.2.0"
-typeArray="all server local"
+typeArray="server local"
+
 
 ## $1 "array" string eg: "a s d f"
 ## $2 select type string
@@ -104,24 +88,27 @@ getVar(){
 
     while true 
     do
-        echo "select $2 for shadowsocks following by a number.default is [0]"
+        echo "select $2 for shadowsocks following by a number.default is [1]"
+        echo ""
         for i in ${!varList[*]}
         do
-            echo "["$i"]. "${varList[$i]}
+            local index=`expr $i + 1`
+            echo "["$index"]. "${varList[$i]}
         done
 
         # int
         read varGet
-        varGet=${varGet:-0}
+        varGet=${varGet:-1}
 
         if ! [[ "$varGet" =~ ^[0-9]+$ ]]; then
             echo $varGet" Not a number!"
             continue
         fi
+        local varGetNew=`expr $varGet - 1`
         
         local arrLen=${#varList[@]}
 
-        if [ "$varGet" -lt "$arrLen" ] && [ "$varGet" -ge "0" ] 
+        if [ "$varGetNew" -lt "$arrLen" ] && [ "$varGetNew" -ge "0" ] 
         then
             break
         fi
@@ -130,7 +117,7 @@ getVar(){
     done
 
     ## return result
-    eval $__resultVar="${varList[$varGet]}"  
+    eval $__resultVar="${varList[$varGetNew]}"  
 }
 
 # type
@@ -141,22 +128,21 @@ echo "type selected is : "$typeResult
 getVar "$architectureArray" "architecture" archiResult
 echo "architecture selected is : "$archiResult
 
-
+# version
 getVar "$versionArray" "version" versionResult
 echo "version selected is : "$versionResult
 
 
-exit;
-echo "copy binary ......"
-##funCopyBinFile $architecture
+## install start
+
+echo "get binary from git release......"
+funGetBinaryFile $typeResult $archiResult $versionResult
 
 echo "copy default config ......"
-funCopyConfig
+funCopyConfig $typeResult
 
 echo "write service ......"
-funCreateServiceFile "sslocal"
-funCreateServiceFile "ssserver"
-
+funCreateServiceFile $typeResult
 
 systemctl daemon-reload
 
