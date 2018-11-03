@@ -154,10 +154,11 @@ echo "...................................."
 
 echo "alter config file from /etc/shadowsocks/"
 
-echo "input \"systemctl start sslocal\" to start the shadowsocks-local service" 
-echo "input \"systemctl start ssserver\" to start the shadowsocks-server service" 
-echo "input \"systemctl enable sslocal\" for autorun on boot" 
-echo "input \"systemctl enable ssserver\" for autorun on boot" 
+echo "...................................."
+echo "...................................."
+
+echo "input \"systemctl start ss$typeResult\" to start the shadowsocks-$typeResult service" 
+echo "input \"systemctl enable ss$typeResult\" for autorun on boot" 
 
 echo "...................................."
 echo "...................................."
