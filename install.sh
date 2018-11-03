@@ -50,8 +50,8 @@ funCopyConfig()
 {
     sourcePath="config/"
     varConfigFile=$sourcePath$1".json"
-    cp $sourcePath"sslocal.json"  $configPath"sslocal.json"
-    cp $sourcePath"ssserver.json"  $configPath"ssserver.json"
+    cp $sourcePath"sslocal.json"  $configPath
+    cp $sourcePath"ssserver.json"  $configPath
 }
 
 ## architecture arm64 amd64 ......
