@@ -1,9 +1,6 @@
 #!/bin/bash
 
 # file name
-localName="sslocal"
-serverName="ssserver"
-
 
 # bin path
 binPath="/usr/local/bin/"
@@ -56,62 +53,102 @@ funCopyConfig()
 }
 
 ## architecture arm64 amd64 ......
-funCopyBinFile()
+# funCopyBinFile()
+# {
+#     ## source file
+#     sourceFileLocal="bin/shadowsocks-local-linux-$1-$binVersion"
+#     sourceFileServer="bin/shadowsocks-server-linux-$1-$binVersion"
+
+#     ## dist file
+#     distFileLocal=$binPath"sslocal"
+#     distFileServer=$binPath"ssserver"
+
+#     ## copy file
+#     cp $sourceFileLocal $distFileLocal
+#     cp $sourceFileServer $distFileServer
+
+#     ## chmod +x
+#     chmod +x $distFileLocal
+#     chmod +x $distFileServer
+# }
+
+## $1 type: server local
+## $2 archi: amd64 arm64
+## $3 version: 
+funGetBinaryFile()
 {
-    ## source file
-    sourceFileLocal="bin/shadowsocks-local-linux-$1-$binVersion"
-    sourceFileServer="bin/shadowsocks-server-linux-$1-$binVersion"
-
-    ## dist file
-    distFileLocal=$binPath"sslocal"
-    distFileServer=$binPath"ssserver"
-
-    ## copy file
-    cp $sourceFileLocal $distFileLocal
-    cp $sourceFileServer $distFileServer
-
-    ## chmod +x
-    chmod +x $distFileLocal
-    chmod +x $distFileServer
+    local type="$1"
+    local archi="$1"
+    local version="$2"
+    local fileName = "shadowsocks-$type-linux-$archi-$version"
+    local url="https://github.com/uljjmhn555/ssinstaller/releases/$version/$fileName.gz"
+    local distFile="ss$type"
+    mkdir "bin"
+    wget -P "bin/" $url
+    gzip -d "bin/$fileName.gz"
+    cp "bin/$fileName" $binPath$distFile
+    chmod +x $binPath$distFile
 }
 
-architectureArray=("arm64" "arm32" "amd64" "i386")
+## architectureArray=("arm64" "arm32" "amd64" "i386")
+architectureArray="amd64 i386 arm64 arm32"
+versionArray="1.2.0"
+typeArray="all server local"
 
+## $1 "array" string eg: "a s d f"
+## $2 select type string
+## $3 result
+getVar(){
+    local varList=($1)
+    local  __resultVar=$3
 
-## get words form input
-while true 
-do
-    echo "select architecture for shadowsocks following"
-    for i in ${!architectureArray[@]}
+    while true 
     do
-        index=`expr $i + 1`
-        echo $index". "${architectureArray[$i]}
-    done
+        echo "select $2 for shadowsocks following by a number.default is [0]"
+        for i in ${!varList[*]}
+        do
+            echo "["$i"]. "${varList[$i]}
+        done
 
-    read architecture
+        # int
+        read varGet
+        varGet=${varGet:-0}
 
-    varFlat=false
-    for item in ${architectureArray[@]}
-    do
-        echo $item"   "$architecture
-        if [ "$item" == "$architecture" ]  
-        then 
-            varFlat=true
-            break 
+        if ! [[ "$varGet" =~ ^[0-9]+$ ]]; then
+            echo $varGet" Not a number!"
+            continue
+        fi
+        
+        local arrLen=${#varList[@]}
+
+        if [ "$varGet" -lt "$arrLen" ] && [ "$varGet" -ge "0" ] 
+        then
+            break
         fi
 
+        echo "select error"
     done
 
-    if $varFlat 
-    then
-        break
-    else
-        echo "select error"
-    fi
-done
+    ## return result
+    eval $__resultVar="${varList[$varGet]}"  
+}
 
+# type
+getVar "$typeArray" "type" typeResult
+echo "type selected is : "$typeResult
+
+# architecture
+getVar "$architectureArray" "architecture" archiResult
+echo "architecture selected is : "$archiResult
+
+
+getVar "$versionArray" "version" versionResult
+echo "version selected is : "$versionResult
+
+
+exit;
 echo "copy binary ......"
-funCopyBinFile $architecture
+##funCopyBinFile $architecture
 
 echo "copy default config ......"
 funCopyConfig
@@ -122,6 +159,7 @@ funCreateServiceFile "ssserver"
 
 
 systemctl daemon-reload
+
 echo "...................................."
 echo "...................................."
 echo "...........install finish..........."
