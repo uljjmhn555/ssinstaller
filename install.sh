@@ -65,17 +65,16 @@ funCopyBinFile()
     distFileLocal=$binPath"sslocal"
     sourceFileServer=$binPath"ssserver"
 
-    ## chmod +x
-    chmod +x $distFileLocal
-    chmod +x $sourceFileServer
-
-
     ## copy file
     cp $sourceFileLocal $distFileLocal
     cp $sourceFileServer $sourceFileServer
+
+    ## chmod +x
+    chmod +x $distFileLocal
+    chmod +x $sourceFileServer
 }
 
-architectureArray=("arm64" "amd64")
+architectureArray=("arm64" "arm32" "amd64" "i386")
 
 
 ## get words form input
@@ -110,5 +109,27 @@ do
     fi
 done
 
+echo "copy binary ......"
+funCopyBinFile $architecture
 
-echo $architecture
+echo "copy default config ......"
+funCopyConfig
+
+echo "write service ......"
+funCreateServiceFile "sslocal"
+funCreateServiceFile "ssserver"
+
+
+systemctl daemon-reload
+echo "...................................."
+echo "...................................."
+echo "...........install finish..........."
+echo "...................................."
+echo "...................................."
+
+echo "alter config file from /etc/shadowsocks/"
+
+echo "input \"systemctl start sslocal\" to start the shadowsocks-local service" 
+echo "input \"systemctl start ssserver\" to start the shadowsocks-server service" 
+echo "input \"systemctl enable sslocal\" for running on boot" 
+echo "input \"systemctl enable ssserver\" for running on boot" 
