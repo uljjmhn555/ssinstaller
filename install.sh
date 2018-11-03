@@ -48,6 +48,7 @@ funCreateServiceFile()
 ## config
 funCopyConfig()
 {
+    mkdir $configPath
     sourcePath="config/"
     varConfigFile=$sourcePath$1".json"
     cp $sourcePath"sslocal.json"  $configPath
