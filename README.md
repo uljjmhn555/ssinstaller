@@ -1,13 +1,13 @@
 # ssinstaller
 
-写的一个安装脚本
-
+编译了[ss-go](https://github.com/shadowsocks/shadowsocks-go)的二进制文件，然后写的一个简易安装脚本
 
 # 安装
 
 ## 第一步，拉代码
 
 ```bash
+# 直接拉源码，不要去下载release，release只是为了保存shadowsocks-go的二进制文件
 git clone https://github.com/uljjmhn555/ssinstaller.git
 ```
 
