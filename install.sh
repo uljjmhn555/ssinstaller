@@ -35,7 +35,7 @@ funCreateServiceFile()
     echo "[Service]" >> $varServiceFile
     echo "Type=forking" >> $varServiceFile
     echo "PIDFile="$pidFilePath$1".pid" >> $varServiceFile
-    echo "ExecStart="$binPath$1" -c "$configPath$1".config > /dev/null & " >> $varServiceFile
+    echo "ExecStart="$binPath$1" -c "$configPath$1".json > /dev/null & " >> $varServiceFile
     echo 'ExecStop=/bin/kill $MAINPID' >> $varServiceFile
     echo 'ExecReload=/bin/kill -USR1 $MAINPID' >> $varServiceFile
     echo "Restart=always" >> $varServiceFile
