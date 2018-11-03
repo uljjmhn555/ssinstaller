@@ -63,15 +63,15 @@ funCopyBinFile()
 
     ## dist file
     distFileLocal=$binPath"sslocal"
-    sourceFileServer=$binPath"ssserver"
+    distFileServer=$binPath"ssserver"
 
     ## copy file
     cp $sourceFileLocal $distFileLocal
-    cp $sourceFileServer $sourceFileServer
+    cp $sourceFileServer $distFileServer
 
     ## chmod +x
     chmod +x $distFileLocal
-    chmod +x $sourceFileServer
+    chmod +x $distFileServer
 }
 
 architectureArray=("arm64" "arm32" "amd64" "i386")
