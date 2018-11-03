@@ -58,8 +58,8 @@ funCopyConfig()
 funCopyBinFile()
 {
     ## source file
-    sourceFileLocal="bin/shadowsocks-local-$1-$binVersion"
-    sourceFileServer="bin/shadowsocks-server-$1-$binVersion"
+    sourceFileLocal="bin/shadowsocks-local-linux-$1-$binVersion"
+    sourceFileServer="bin/shadowsocks-server-linux-$1-$binVersion"
 
     ## dist file
     distFileLocal=$binPath"sslocal"
@@ -131,5 +131,11 @@ echo "alter config file from /etc/shadowsocks/"
 
 echo "input \"systemctl start sslocal\" to start the shadowsocks-local service" 
 echo "input \"systemctl start ssserver\" to start the shadowsocks-server service" 
-echo "input \"systemctl enable sslocal\" for running on boot" 
-echo "input \"systemctl enable ssserver\" for running on boot" 
+echo "input \"systemctl enable sslocal\" for autorun on boot" 
+echo "input \"systemctl enable ssserver\" for autorun on boot" 
+
+echo "...................................."
+echo "...................................."
+echo ".............thank you.............."
+echo "...................................."
+echo "...................................."
