@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # bin path
-binPath="/usr/local/bin/"
-#binPath="./tmp/"
+installPath="/usr/local/shadowsocks/"
+
 
 # config path
 configPath="/etc/shadowsocks/"
@@ -31,7 +31,7 @@ funCreateServiceFile()
     echo "[Service]" >> $varServiceFile
     echo "Type=forking" >> $varServiceFile
     echo "PIDFile="$pidFilePath$ssType".pid" >> $varServiceFile
-    echo "ExecStart="$binPath$ssType" -c "$configPath$ssType".json > /dev/null & " >> $varServiceFile
+    echo "ExecStart="$installPath"start."$1".sh" >> $varServiceFile
     echo 'ExecStop=/bin/kill $MAINPID' >> $varServiceFile
     echo 'ExecReload=/bin/kill -USR1 $MAINPID' >> $varServiceFile
     echo "Restart=always" >> $varServiceFile
@@ -67,10 +67,23 @@ funGetBinaryFile()
     local url="https://github.com/uljjmhn555/ssinstaller/releases/download/$version/$fileName.gz"
     local distFile="ss$type"
     mkdir "bin"
+    rm -rf bin/shadowsocks*
     wget -P "bin/" $url
     gzip -d "bin/$fileName.gz"
-    cp "bin/$fileName" $binPath$distFile
-    chmod +x $binPath$distFile
+    mkdir $installPath
+    cp "bin/$fileName" $installPath$distFile
+    chmod +x $installPath$distFile
+
+    
+}
+
+## $1 type: server local
+funCopyScript()
+{
+    local type="$1"
+    # start shell
+    cp "scripts/start.$type.sh" $installPath
+    chmod +x $installPath"start.$type.sh"
 }
 
 ## architecture  version  type
@@ -137,6 +150,9 @@ echo "version selected is : "$versionResult
 
 echo "get binary from git release......"
 funGetBinaryFile $typeResult $archiResult $versionResult
+
+echo "copy scripts"
+funCopyScript $typeResult
 
 echo "copy default config ......"
 funCopyConfig $typeResult
